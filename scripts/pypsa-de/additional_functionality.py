@@ -228,6 +228,18 @@ def h2_import_limits(n, investment_year, limits_volume_max):
             & (n.links.bus1.str[:2] != ct)
         ]
 
+        if incoming.empty and outgoing.empty:
+            logger.warning(
+                f"No hydrogen import/export links found for {ct}; skipping limit enforcement."
+            )
+            continue
+
+        if incoming.empty and outgoing.empty:
+            logger.warning(
+                f"No hydrogen import/export links found for {ct}; skipping limit enforcement."
+            )
+            continue
+
         incoming_p = (
             n.model["Link-p"].loc[:, incoming] * n.snapshot_weightings.generators
         ).sum()
