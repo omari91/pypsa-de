@@ -1,3 +1,10 @@
+"""
+Utility script to extract network components from PyPSA-DE exports and format
+them into STRANSIENT-compatible CSV files.
+
+This can be run standalone via the CLI, or automatically as part of a Snakemake workflow.
+"""
+
 import argparse
 from pathlib import Path
 
@@ -5,6 +12,16 @@ import pandas as pd
 
 
 def export_stransient(base: Path, out: Path):
+    """
+    Parses PyPSA network CSV exports and translates them into the STRANSIENT format.
+
+    Parameters
+    ----------
+    base : Path
+        Input directory containing standard PyPSA exports (buses.csv, lines.csv, generators.csv, loads.csv).
+    out : Path
+        Output directory to save the formatted STRANSIENT CSV files.
+    """
     out.mkdir(parents=True, exist_ok=True)
     bus_df = pd.read_csv(base / "buses.csv").rename(
         columns={"name": "bus_id", "v_nom": "vn_kv"}
