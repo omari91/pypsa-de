@@ -1,12 +1,15 @@
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
 
 try:
     import pandapower as pp
-except ImportError as exc:  # pragma: no cover - fallback for environments without pandapower
-    raise ImportError("pandapower is required to build a STRANSIENT grid but is not installed.") from exc
+except (
+    ImportError
+) as exc:  # pragma: no cover - fallback for environments without pandapower
+    raise ImportError(
+        "pandapower is required to build a STRANSIENT grid but is not installed."
+    ) from exc
 
 
 def _safe_per_km(value: float, length_km: float) -> float:
@@ -15,7 +18,7 @@ def _safe_per_km(value: float, length_km: float) -> float:
 
 def build_net_from_stransient(
     folder: Path,
-    slack_bus_id: Optional[str] = None,
+    slack_bus_id: str | None = None,
     vm_pu: float = 1.02,
 ) -> pp.pandapowerNet:
     """
@@ -50,10 +53,14 @@ def build_net_from_stransient(
 
     slack_bus_id = slack_bus_id or (bus_df["bus_id"].iloc[0] if len(bus_df) else None)
     if slack_bus_id and slack_bus_id in bus_map:
-        pp.create_ext_grid(net, bus=bus_map[slack_bus_id], vm_pu=vm_pu, name="STRANSIENT slack")
+        pp.create_ext_grid(
+            net, bus=bus_map[slack_bus_id], vm_pu=vm_pu, name="STRANSIENT slack"
+        )
     elif bus_map:
         first_bus = next(iter(bus_map.values()))
-        pp.create_ext_grid(net, bus=first_bus, vm_pu=vm_pu, name="STRANSIENT slack (default)")
+        pp.create_ext_grid(
+            net, bus=first_bus, vm_pu=vm_pu, name="STRANSIENT slack (default)"
+        )
 
     for _, row in gen_df.iterrows():
         bus_name = row["bus"]
