@@ -315,6 +315,7 @@ def add_power_capacities_installed_before_baseyear(
     # calculate (adjusted) remaining lifetime before phase-out (+1 because assuming
     # phase out date at the end of the year)
     df_agg["lifetime"] = df_agg.DateOut - df_agg["grouping_year"] + 1
+    df_agg.loc[df_agg.Fueltype == "oil", "lifetime"] = df_agg.loc[df_agg.Fueltype == "oil", "lifetime"].clip(upper=40)
 
     df = df_agg.pivot_table(
         index=["grouping_year", "Fueltype", "resource_class"],
@@ -614,6 +615,7 @@ def add_chp_plants(
     chp.loc[chp.Fueltype == "gas", "lifetime"] = (
         chp.DateOut - chp["grouping_year"] + 1
     ).fillna(lifetime_gas_chp)
+    chp.loc[chp.Fueltype == "oil", "lifetime"] = chp.loc[chp.Fueltype == "oil", "lifetime"].clip(upper=40)
 
     chp = chp.loc[
         chp.grouping_year + chp.lifetime > baseyear
