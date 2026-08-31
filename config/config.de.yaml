@@ -4,7 +4,7 @@
 
 # docs in https://pypsa-eur.readthedocs.io/en/latest/configuration.html#run
 run:
-  prefix: 20260305_housekeeping
+  prefix: 20260422_small_changes
   name:
   # - ExPol
   - KN2045_Mix
@@ -41,7 +41,6 @@ pypsa-de:
   ageb_for_mobility: true # In 2020 use AGEB data for final energy demand and KBA for vehicles
   uba_for_mobility: # Available for 2025–2035; uses MWMS scenario from UBA Projektionsbericht 2025
   - 2025
-  - 2030
   uba_for_industry: # Available for 2025–2035; uses MWMS scenario from UBA Projektionsbericht 2025
     scale_non_energy: false # Scale non-energy demand directly proportional to energy demand
     enable: # Allowed values are "false" or a subset of [2025, 2030, 2035]
@@ -426,7 +425,6 @@ solving:
     transmission_losses: true
     custom_extra_functionality: "../scripts/pypsa-de/additional_functionality.py"
     assign_all_duals: true
-    load_shedding: false
     skip_iterations: true # settings for post-discretization: false
     min_iterations: 1 # settings for post-discretization: 1
     max_iterations: 1 # settings for post-discretization: 1
