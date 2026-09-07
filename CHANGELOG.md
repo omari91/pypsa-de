@@ -1,4 +1,5 @@
 # Changelog
+- fix: resolve ValueError for constant-constant constraints and document H2 import limits config
 - Switched to new secant based transmission losses from pypsa 1.1
 - Switched to weather year 2013
 - in 2030 use UBA data for industry and mobility
