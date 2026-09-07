@@ -102,8 +102,11 @@ def add_capacity_limits(n, investment_year, limits_capacity, sense="maximum"):
                         )
                         rhs = 0
 
-                    n.model.add_constraints(
-                        lhs <= rhs,
+                    safe_add_constraint(
+                        n.model,
+                        lhs,
+                        rhs,
+                        "<=",
                         name=f"GlobalConstraint-{cname}",
                     )
                     n.add(
@@ -116,8 +119,11 @@ def add_capacity_limits(n, investment_year, limits_capacity, sense="maximum"):
                     )
 
                 elif sense == "minimum":
-                    n.model.add_constraints(
-                        lhs >= rhs,
+                    safe_add_constraint(
+                        n.model,
+                        lhs,
+                        rhs,
+                        ">=",
                         name=f"GlobalConstraint-{cname}",
                     )
                     n.add(
@@ -162,12 +168,18 @@ def add_power_limits(n, investment_year, limits_power_max):
             upper=0,
             coords=[n.snapshots, idx],
         )
-        n.model.add_constraints(
-            aux_pos >= var,
+        safe_add_constraint(
+            n.model,
+            aux_pos,
+            var,
+            ">=",
             name=f"{var_name}-{infix}-aux-pos-constr",
         )
-        n.model.add_constraints(
-            aux_neg <= var,
+        safe_add_constraint(
+            n.model,
+            aux_neg,
+            var,
+            "<=",
             name=f"{var_name}-{infix}-aux-neg-constr",
         )
         return aux_pos, aux_neg
@@ -230,8 +242,8 @@ def add_power_limits(n, investment_year, limits_power_max):
             - incoming_lines_aux_neg
         ).sum(dim="name") / 10
 
-        n.model.add_constraints(import_lhs <= lim / 10, name=f"Power-import-limit-{ct}")
-        n.model.add_constraints(export_lhs <= lim / 10, name=f"Power-export-limit-{ct}")
+        safe_add_constraint(n.model, import_lhs, lim / 10, "<=", name=f"Power-import-limit-{ct}")
+        safe_add_constraint(n.model, export_lhs, lim / 10, "<=", name=f"Power-export-limit-{ct}")
 
 
 def h2_import_limits(n, investment_year, limits_volume_max):
@@ -258,12 +270,6 @@ def h2_import_limits(n, investment_year, limits_volume_max):
             & (n.links.bus0.str[:2] == ct)
             & (n.links.bus1.str[:2] != ct)
         ]
-
-        if incoming.empty and outgoing.empty:
-            logger.warning(
-                f"No hydrogen import/export links found for {ct}; skipping limit enforcement."
-            )
-            continue
 
         if incoming.empty and outgoing.empty:
             logger.warning(
@@ -365,12 +371,12 @@ def h2_production_limits(n, investment_year, limits_volume_min, limits_volume_ma
         cname_upper = f"H2_production_limit_upper-{ct}"
         cname_lower = f"H2_production_limit_lower-{ct}"
 
-        n.model.add_constraints(
-            lhs <= limit_upper, name=f"GlobalConstraint-{cname_upper}"
+        safe_add_constraint(
+            n.model, lhs, limit_upper, "<=", name=f"GlobalConstraint-{cname_upper}"
         )
 
-        n.model.add_constraints(
-            lhs >= limit_lower, name=f"GlobalConstraint-{cname_lower}"
+        safe_add_constraint(
+            n.model, lhs, limit_lower, ">=", name=f"GlobalConstraint-{cname_lower}"
         )
 
         if cname_upper not in n.global_constraints.index:
@@ -442,7 +448,7 @@ def electricity_import_limits(n, investment_year, limits_volume_max):
 
         cname = f"Electricity_import_limit-{ct}"
 
-        n.model.add_constraints(lhs <= limit, name=f"GlobalConstraint-{cname}")
+        safe_add_constraint(n.model, lhs, limit, "<=", name=f"GlobalConstraint-{cname}")
 
         if cname in n.global_constraints.index:
             logger.warning(
@@ -663,8 +669,11 @@ def add_national_co2_budgets(n, snakemake, national_co2_budgets, investment_year
 
         cname = f"co2_limit-{ct}"
 
-        n.model.add_constraints(
-            lhs <= limit,
+        safe_add_constraint(
+            n.model,
+            lhs,
+            limit,
+            "<=",
             name=f"GlobalConstraint-{cname}",
         )
 
@@ -826,7 +835,7 @@ def add_h2_derivate_limit(n, investment_year, limits_volume_max):
 
             lhs = incoming_p - outgoing_p
 
-            n.model.add_constraints(lhs <= limit, name=f"GlobalConstraint-{cname}")
+            safe_add_constraint(n.model, lhs, limit, "<=", name=f"GlobalConstraint-{cname}")
 
             if cname in n.global_constraints.index:
                 logger.warning(
@@ -866,7 +875,7 @@ def adapt_nuclear_output(n):
 
     cname = "Nuclear_generation_limit-DE"
 
-    n.model.add_constraints(lhs <= limit, name=f"GlobalConstraint-{cname}")
+    safe_add_constraint(n.model, lhs, limit, "<=", name=f"GlobalConstraint-{cname}")
 
     if cname in n.global_constraints.index:
         logger.warning(
